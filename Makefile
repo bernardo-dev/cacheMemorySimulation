@@ -1,17 +1,29 @@
-all: main.o cpu.o generator.o instruction.o memory.o mmu.o
-	@gcc main.o cpu.o generator.o instruction.o memory.o mmu.o -o exe -lm
-	@rm -r main.o cpu.o generator.o instruction.o memory.o mmu.o
-main.o: main.c
-	@gcc main.c -c 
-cpu.o: cpu.c
-	@gcc cpu.c -c 
-generator.o: generator.c
-	@gcc generator.c -c 
-instruction.o: instruction.c
-	@gcc instruction.c -c 
-memory.o: memory.c
-	@gcc memory.c -c 
-mmu.o: mmu.c
-	@gcc mmu.c -c 
+# Variáveis para os arquivos fonte e de objetos
+SRCS := main.c cpu.c generator.c instruction.c memory.c mmu.c
+OBJS := $(SRCS:.c=.o)
+
+# Nome do executável
+EXEC := exe
+
+# Flags do compilador
+CFLAGS := -Wall -Wextra -std=c99
+LDFLAGS := -lm
+
+# Regra principal: construir o executável
+all: $(EXEC)
+
+# Regra implícita para compilar arquivos .c em objetos .o
+%.o: %.c
+	@gcc $(CFLAGS) -c $<
+
+# Regra para o executável
+$(EXEC): $(OBJS)
+	@gcc $(OBJS) -o $(EXEC) $(LDFLAGS)
+
+# Regra para executar o programa
 run:
-	@./exe
+	@./$(EXEC)
+
+# Regra para limpar os arquivos gerados pela compilação
+clean:
+	@rm -f $(OBJS) $(EXEC)

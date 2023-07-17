@@ -9,15 +9,15 @@ int main(int argc, char**argv) {
 
     srand(1507);   // Inicializacao da semente para os numeros aleatorios.
 
-    if (argc != 5) {
+    if (argc != 6) {
         printf("Numero de argumentos invalidos! Sao 5.\n");
-        printf("Linha de execucao: ./exe TIPO_INSTRUCAO [TAMANHO_RAM|ARQUIVO_DE_INSTRUCOES] TAMANHO_L1 TAMANHO_L2\n");
-        printf("\tExemplo 1 de execucao: ./exe random 10 2 4\n");
+        printf("Linha de execucao: ./exe TIPO_INSTRUCAO [TAMANHO_RAM|ARQUIVO_DE_INSTRUCOES] TAMANHO_L1 TAMANHO_L2 TAMANHO_L3\n");
+        printf("\tExemplo 1 de execucao: ./exe random 10 2 4 8\n");
         printf("\tExemplo 2 de execucao: ./exe file arquivo_de_instrucoes.txt 2 4\n");
         return 0;
     }
 
-    int memoriesSize[4];
+    int memoriesSize[5];
     Machine machine;
     Instruction *instructions;
 

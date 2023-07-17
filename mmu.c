@@ -22,6 +22,8 @@ char *convertToString(WhereWasHit whereWasHit) {
     return "CL3";
   case RAMHit:
     return "RAM";
+  default:
+    return "ERR MMU";
   }
 }
 
@@ -67,7 +69,17 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     cost = COST_ACCESS_L1 + COST_ACCESS_L2 + COST_ACCESS_L3;
     *whereWasHit = L3Hit;
     // Just works for Direct Mapping
-    {}
+    {
+      Line tmp = cache2[l2pos];
+      cache2[l2pos] = cache3[l3pos];
+      int newL3pos = lineWhichWillLeave(
+          tmp.tag, &machine->l3); /* Need to check the position of the block
+                                     that will leave the L2 */
+      if (!canOnlyReplaceBlock(cache2[newL3pos])){
+        RAM[cache3[newL3pos].tag] = cache2[newL3pos].block;
+      }
+      cache3[newL3pos] = tmp;
+    }
   } else {
     /* Block only in memory RAM, need to bring it to cache and manipulate the
      * blocks */
@@ -120,10 +132,17 @@ void updateMachineInfos(Machine *machine, WhereWasHit *whereWasHit, int cost) {
     machine->missL1 += 1;
     break;
 
+  case L3Hit:
+    machine->hitL3 += 1;
+    machine->missL1 += 1;
+    machine->missL2 += 1;
+    break;
+
   case RAMHit:
     machine->hitRAM += 1;
     machine->missL1 += 1;
     machine->missL2 += 1;
+    machine->missL3 += 1;
     break;
   }
   machine->totalCost += cost;
