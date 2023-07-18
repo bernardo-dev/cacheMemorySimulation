@@ -19,6 +19,10 @@ all: $(EXEC)
 # Regra para o executável
 $(EXEC): $(OBJS)
 	@gcc $(OBJS) -o $(EXEC) $(LDFLAGS)
+	@rm -f $(OBJS)
+
+valgrind: $(OBJS)
+	@gcc $(OBJS) -o $(EXEC) $(LDFLAGS) -g
 
 # Regra para executar o programa
 run:

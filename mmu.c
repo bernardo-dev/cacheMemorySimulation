@@ -75,7 +75,7 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
       int newL3pos = lineWhichWillLeave(
           tmp.tag, &machine->l3); /* Need to check the position of the block
                                      that will leave the L2 */
-      if (!canOnlyReplaceBlock(cache2[newL3pos])){
+      if (!canOnlyReplaceBlock(cache2[newL3pos])) {
         RAM[cache3[newL3pos].tag] = cache2[newL3pos].block;
       }
       cache3[newL3pos] = tmp;
@@ -83,18 +83,25 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
   } else {
     /* Block only in memory RAM, need to bring it to cache and manipulate the
      * blocks */
-    int newL3pos = lineWhichWillLeave(
-        cache1[l1pos].tag, &machine->l3); /* Need to check the position of the
+    int newL2pos = lineWhichWillLeave(
+        cache1[l1pos].tag, &machine->l2); /* Need to check the position of the
                                              block that will leave the L1 */
+    int newL3pos = lineWhichWillLeave(cache2[l2pos].tag, &machine->l3);
+
     if (!canOnlyReplaceBlock(cache1[l1pos])) {
       /* The block on cache L1 cannot only be replaced, the memories must be
        * updated */
-      if (!canOnlyReplaceBlock(cache2[l2pos]))
+      if (!canOnlyReplaceBlock(cache2[l2pos])) {
         /* The block on cache L2 cannot only be replaced, the memories must be
          * updated */
-        if (!canOnlyReplaceBlock(cache3[l3pos]))
+        if (!canOnlyReplaceBlock(cache3[l3pos])) {
+          /* The block on cache L2 cannot only be replaced, the memories must be
+           * updated */
           RAM[cache3[newL3pos].tag] = cache3[newL3pos].block;
-      cache3[newL3pos] = cache1[l1pos];
+        }
+        cache3[newL3pos] = cache2[l2pos];
+      }
+      cache2[newL2pos] = cache1[l1pos];
     }
     cache1[l1pos].block = RAM[add.block];
     cache1[l1pos].tag = add.block;
