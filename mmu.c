@@ -83,22 +83,23 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
   } else {
     /* Block only in memory RAM, need to bring it to cache and manipulate the
      * blocks */
-    int newL2pos = lineWhichWillLeave(
-        cache1[l1pos].tag, &machine->l2); /* Need to check the position of the
+    int newL3pos = lineWhichWillLeave(
+        cache1[l1pos].tag, &machine->l3); /* Need to check the position of the
                                              block that will leave the L1 */
     if (!canOnlyReplaceBlock(cache1[l1pos])) {
       /* The block on cache L1 cannot only be replaced, the memories must be
        * updated */
-      if (!canOnlyReplaceBlock(cache2[newL2pos]))
+      if (!canOnlyReplaceBlock(cache2[l2pos]))
         /* The block on cache L2 cannot only be replaced, the memories must be
          * updated */
-        RAM[cache2[newL2pos].tag] = cache2[newL2pos].block;
-      cache2[newL2pos] = cache1[l1pos];
+        if (!canOnlyReplaceBlock(cache3[l3pos]))
+          RAM[cache3[newL3pos].tag] = cache3[newL3pos].block;
+      cache3[newL3pos] = cache1[l1pos];
     }
     cache1[l1pos].block = RAM[add.block];
     cache1[l1pos].tag = add.block;
     cache1[l1pos].updated = false;
-    cost = COST_ACCESS_L1 + COST_ACCESS_L2 + COST_ACCESS_RAM;
+    cost = COST_ACCESS_L1 + COST_ACCESS_L2 + COST_ACCESS_L3 + COST_ACCESS_RAM;
     *whereWasHit = RAMHit;
   }
   updateMachineInfos(machine, whereWasHit, cost);
