@@ -19,6 +19,7 @@ typedef struct {
     MemoryBlock block;
     int tag; /* Address of the block in memory RAM */
     bool updated;
+    int queuePlace;
 } Line;
 
 typedef struct {

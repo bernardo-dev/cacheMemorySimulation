@@ -1,4 +1,5 @@
 #include "mmu.h"
+#include "lru.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -33,6 +34,9 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
 
   if (isOnCache(add.block, &machine->l1)) {
     /* Block is in memory cache L1 */
+    int l1pos = memoryCacheMapping(add.block, &machine->l1);
+    LRUIncrement(&machine->l1);
+    cache1[l1pos].queuePlace = 0;
     cost = COST_ACCESS_L1;
     *whereWasHit = L1Hit;
   } else if (isOnCache(add.block, &machine->l2)) {
