@@ -20,7 +20,7 @@ bool canOnlyReplaceBlock(Line);
 
 int memoryCacheMapping(int, Cache *);
 
-int lineWhichWillLeave(int, Cache *);
+int lineWhichWillLeave(Cache *);
 
 void updateMachineInfos(Machine *, WhereWasHit *, int);
 
