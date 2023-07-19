@@ -47,6 +47,8 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
       int l2pos = memoryCacheMapping(add.block, &machine->l2);
       Line tmp = cache1[newL1pos];
       cache1[newL1pos] = cache2[l2pos];
+      cache2[l2pos].tag = INVALID_ADD;
+      cache2[l2pos].updated = false;
 
       if (!canOnlyReplaceBlock(cache2[newL2pos])) {
         if (!canOnlyReplaceBlock(cache3[newL3pos])) {
@@ -68,6 +70,8 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
       int l3pos = memoryCacheMapping(add.block, &machine->l3);
       Line tmp = cache1[newL1pos];
       cache1[newL1pos] = cache3[l3pos];
+      cache3[l3pos].tag = INVALID_ADD;
+      cache3[l3pos].updated = false;
 
       if (!canOnlyReplaceBlock(cache2[newL2pos])) {
         if (!canOnlyReplaceBlock(cache3[l3pos])) {
@@ -141,6 +145,11 @@ int memoryCacheMapping(int address, Cache *cache) {
 int lineWhichWillLeave(Cache *cache) {
   for (int i = 0; i < cache->size; i++) {
     if (cache->lines[i].tag == INVALID_ADD) {
+      return i;
+    }
+  }
+  for (int i = 0; i < cache->size; i++){
+    if (cache->lines[i].tag != INVALID_ADD && !(cache->lines[i].updated)){
       return i;
     }
   }
