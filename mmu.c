@@ -34,9 +34,6 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
 
   if (isOnCache(add.block, &machine->l1)) {
     /* Block is in memory cache L1 */
-    int l1pos = memoryCacheMapping(add.block, &machine->l1);
-    LRUIncrement(&machine->l1);
-    cache1[l1pos].queuePlace = 0;
     cost = COST_ACCESS_L1;
     *whereWasHit = L1Hit;
   } else if (isOnCache(add.block, &machine->l2)) {
@@ -44,7 +41,7 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     cost = COST_ACCESS_L1 + COST_ACCESS_L2;
     *whereWasHit = L2Hit;
     {
-      int newL1pos = lineWhichWillLeave(&machine->l1);
+      int newL1pos = LRUlineWhichWillLeave(&machine->l1);
       int newL2pos = lineWhichWillLeave(&machine->l2);
       int newL3pos = lineWhichWillLeave(&machine->l3);
 
@@ -67,7 +64,7 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     cost = COST_ACCESS_L1 + COST_ACCESS_L2 + COST_ACCESS_L3;
     *whereWasHit = L3Hit;
     {
-      int newL1pos = lineWhichWillLeave(&machine->l1);
+      int newL1pos = LRUlineWhichWillLeave(&machine->l1);
       int newL2pos = lineWhichWillLeave(&machine->l2);
       int newL3pos = lineWhichWillLeave(&machine->l3);
 
@@ -89,7 +86,7 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     /* Block only in memory RAM, need to bring it to cache and manipulate the
      * blocks */
 
-    int newL1pos = lineWhichWillLeave(&machine->l1);
+    int newL1pos = LRUlineWhichWillLeave(&machine->l1);
     int newL2pos = lineWhichWillLeave(&machine->l2);
     int newL3pos = lineWhichWillLeave(&machine->l3);
 
@@ -114,8 +111,11 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     cost = COST_ACCESS_L1 + COST_ACCESS_L2 + COST_ACCESS_L3 + COST_ACCESS_RAM;
     *whereWasHit = RAMHit;
   }
+
   updateMachineInfos(machine, whereWasHit, cost);
+  LRUIncrement(&machine->l1);
   int l1pos = memoryCacheMapping(add.block, &machine->l1);
+  cache1[l1pos].queuePlace = 0;
   return &(cache1[l1pos]);
 }
 
@@ -152,8 +152,8 @@ int lineWhichWillLeave(Cache *cache) {
       return i;
     }
   }
-  for (int i = 0; i < cache->size; i++){
-    if (cache->lines[i].tag != INVALID_ADD && !(cache->lines[i].updated)){
+  for (int i = 0; i < cache->size; i++) {
+    if (cache->lines[i].tag != INVALID_ADD && !(cache->lines[i].updated)) {
       return i;
     }
   }

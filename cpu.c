@@ -188,28 +188,38 @@ void printMemories(Machine *machine) {
   printf("\x1b[0;30;47m      ");
   printc("RAM", WORDS_SIZE * 8 + 3);
   printc("Cache L3", WORDS_SIZE * 8 + 10);
+  printf("%5c", ' ');
   printc("Cache L2", WORDS_SIZE * 8 + 10);
+
+  printf("%5c", ' ');
   printc("Cache L1", WORDS_SIZE * 8 + 10);
   printf("\x1b[0m\n");
   for (int i = 0; i < machine->ram.size; i++) {
     printf("\x1b[0;30;47m%6d|\x1b[0m", i);
-    for (int j = 0; j < WORDS_SIZE; j++)
+    for (int j = 0; j < WORDS_SIZE; j++) {
       printf(" %6d |", machine->ram.blocks[i].words[j]);
+    }
     if (i < machine->l3.size) {
       printf("|");
       printcolored(machine->l3.lines[i].tag, machine->l3.lines[i].updated);
-      for (int k = 0; k < WORDS_SIZE; k++)
+      for (int k = 0; k < WORDS_SIZE; k++) {
         printf(" %6d |", machine->l3.lines[i].block.words[k]);
+      }
+      printf(" %d |", machine->l3.lines[i].queuePlace);
       if (i < machine->l2.size) {
         printf("|");
         printcolored(machine->l2.lines[i].tag, machine->l2.lines[i].updated);
-        for (int j = 0; j < WORDS_SIZE; j++)
+        for (int j = 0; j < WORDS_SIZE; j++) {
           printf(" %6d |", machine->l2.lines[i].block.words[j]);
+        }
+        printf(" %d |", machine->l2.lines[i].queuePlace);
         if (i < machine->l1.size) {
           printf("|");
           printcolored(machine->l1.lines[i].tag, machine->l1.lines[i].updated);
-          for (int j = 0; j < WORDS_SIZE; j++)
+          for (int j = 0; j < WORDS_SIZE; j++) {
             printf(" %6d |", machine->l1.lines[i].block.words[j]);
+          }
+          printf(" %d |", machine->l1.lines[i].queuePlace);
         }
       }
     }

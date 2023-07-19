@@ -19,8 +19,10 @@ void startCache(Cache* cache, int size) {
     cache->lines = (Line*) malloc(sizeof(Line) * size);
     cache->size = size;
 
-    for (int i=0;i<size;i++)
+    for (int i=0;i<size;i++){
+        cache->lines[i].queuePlace = -1;
         cache->lines[i].tag = INVALID_ADD;
+    }
 }
 
 void stopCache(Cache *cache) {
