@@ -1,6 +1,6 @@
 #include "mmu.h"
-#include "lru.h"
 #include "lfu.h"
+#include "lru.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -22,9 +22,6 @@ char *convertToString(WhereWasHit whereWasHit) {
 
 Line *MMUSearchOnMemorys(Address add, Machine *machine,
                          WhereWasHit *whereWasHit) {
-  // Strategy => write back
-
-  // Direct memory map
   Line *cache1 = machine->l1.lines;
   Line *cache2 = machine->l2.lines;
   Line *cache3 = machine->l3.lines;
@@ -43,21 +40,20 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     *whereWasHit = L2Hit;
     {
       int newL1pos = LRUlineWhichWillLeave(&machine->l1);
-      int newL2pos = LFUlineWhichWillLeave(&machine->l2);
-      int newL3pos = lineWhichWillLeave(&machine->l3);
+      int newL2pos = lineWhichWillLeave(&machine->l2);
+      int newL3pos = LFUlineWhichWillLeave(&machine->l3);
 
       int l2pos = memoryCacheMapping(add.block, &machine->l2);
       Line tmp = cache1[newL1pos];
       cache1[newL1pos] = cache2[l2pos];
-      cache2[l2pos].tag = INVALID_ADD;
-      cache2[l2pos].updated = false;
+      // cache2[l2pos].tag = INVALID_ADD;
+      // cache2[l2pos].updated = false;
 
       if (!canOnlyReplaceBlock(cache2[newL2pos])) {
         if (!canOnlyReplaceBlock(cache3[newL3pos])) {
           RAM[cache3[newL3pos].tag] = cache3[newL3pos].block;
         }
         cache3[newL3pos] = cache2[newL2pos];
-        cache3[newL3pos].queuePlace = 0;
       }
       cache2[newL2pos] = tmp;
       cache2[newL2pos].queuePlace = 0;
@@ -68,32 +64,32 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     *whereWasHit = L3Hit;
     {
       int newL1pos = LRUlineWhichWillLeave(&machine->l1);
-      int newL2pos = LFUlineWhichWillLeave(&machine->l2);
-      int newL3pos = lineWhichWillLeave(&machine->l3);
+      int newL2pos = lineWhichWillLeave(&machine->l2);
+      int newL3pos = LFUlineWhichWillLeave(&machine->l3);
 
       int l3pos = memoryCacheMapping(add.block, &machine->l3);
+      LFUIncrement(&cache3[l3pos]);
       Line tmp = cache1[newL1pos];
       cache1[newL1pos] = cache3[l3pos];
-      cache3[l3pos].tag = INVALID_ADD;
-      cache3[l3pos].updated = false;
+      // cache3[l3pos].tag = INVALID_ADD;
+      // cache3[l3pos].updated = false;
 
       if (!canOnlyReplaceBlock(cache2[newL2pos])) {
         if (!canOnlyReplaceBlock(cache3[l3pos])) {
           RAM[cache3[newL3pos].tag] = cache3[newL3pos].block;
         }
         cache3[newL3pos] = cache2[newL2pos];
-        cache3[newL3pos].queuePlace = 0;
       }
       cache2[newL2pos] = tmp;
-      cache2[newL2pos].queuePlace = 0;
+      // cache2[newL2pos].queuePlace = 0;
     }
   } else {
     /* Block only in memory RAM, need to bring it to cache and manipulate the
      * blocks */
 
     int newL1pos = LRUlineWhichWillLeave(&machine->l1);
-    int newL2pos = LFUlineWhichWillLeave(&machine->l2);
-    int newL3pos = lineWhichWillLeave(&machine->l3);
+    int newL2pos = lineWhichWillLeave(&machine->l2);
+    int newL3pos = LFUlineWhichWillLeave(&machine->l3);
 
     if (!canOnlyReplaceBlock(cache1[newL1pos])) {
       /* The block on cache L1 cannot only be replaced, the memories must be

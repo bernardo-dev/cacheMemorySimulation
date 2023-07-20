@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "memory.h"
 #include "mmu.h"
+// #include <limits.h>
 
 void LFUIncrement(Line *line) {
   // Incrementa a queuePlace da linha
@@ -23,8 +24,8 @@ int LFUlineWhichWillLeave(Cache *cache) {
     }
   }
 
-  int smaller = cache->lines[0].queuePlace;
-  int tag;
+  int smaller = 1000;
+  int tag = 0;
 
   for (int i = 0; i < cache->size; i++) {
     if (cache->lines[i].queuePlace <= smaller) {
