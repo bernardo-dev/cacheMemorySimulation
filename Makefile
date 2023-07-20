@@ -1,5 +1,5 @@
 # Variáveis para os arquivos fonte e de objetos
-SRCS := main.c cpu.c generator.c instruction.c memory.c mmu.c lru.c
+SRCS := main.c cpu.c generator.c instruction.c memory.c mmu.c lru.c lfu.c
 OBJS := $(SRCS:.c=.o)
 
 # Nome do executável

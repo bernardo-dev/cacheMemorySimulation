@@ -1,5 +1,6 @@
 #include "mmu.h"
 #include "lru.h"
+#include "lfu.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -42,7 +43,7 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     *whereWasHit = L2Hit;
     {
       int newL1pos = LRUlineWhichWillLeave(&machine->l1);
-      int newL2pos = lineWhichWillLeave(&machine->l2);
+      int newL2pos = LFUlineWhichWillLeave(&machine->l2);
       int newL3pos = lineWhichWillLeave(&machine->l3);
 
       int l2pos = memoryCacheMapping(add.block, &machine->l2);
@@ -56,8 +57,10 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
           RAM[cache3[newL3pos].tag] = cache3[newL3pos].block;
         }
         cache3[newL3pos] = cache2[newL2pos];
+        cache3[newL3pos].queuePlace = 0;
       }
       cache2[newL2pos] = tmp;
+      cache2[newL2pos].queuePlace = 0;
     }
   } else if (isOnCache(add.block, &machine->l3)) {
     /* Block is memory cache L3 */
@@ -65,7 +68,7 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
     *whereWasHit = L3Hit;
     {
       int newL1pos = LRUlineWhichWillLeave(&machine->l1);
-      int newL2pos = lineWhichWillLeave(&machine->l2);
+      int newL2pos = LFUlineWhichWillLeave(&machine->l2);
       int newL3pos = lineWhichWillLeave(&machine->l3);
 
       int l3pos = memoryCacheMapping(add.block, &machine->l3);
@@ -79,15 +82,17 @@ Line *MMUSearchOnMemorys(Address add, Machine *machine,
           RAM[cache3[newL3pos].tag] = cache3[newL3pos].block;
         }
         cache3[newL3pos] = cache2[newL2pos];
+        cache3[newL3pos].queuePlace = 0;
       }
       cache2[newL2pos] = tmp;
+      cache2[newL2pos].queuePlace = 0;
     }
   } else {
     /* Block only in memory RAM, need to bring it to cache and manipulate the
      * blocks */
 
     int newL1pos = LRUlineWhichWillLeave(&machine->l1);
-    int newL2pos = lineWhichWillLeave(&machine->l2);
+    int newL2pos = LFUlineWhichWillLeave(&machine->l2);
     int newL3pos = lineWhichWillLeave(&machine->l3);
 
     if (!canOnlyReplaceBlock(cache1[newL1pos])) {
